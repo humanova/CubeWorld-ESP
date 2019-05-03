@@ -33,9 +33,10 @@ void CubeX::GetGameOffsets()
     offset.GameController = *(unsigned int*)(offset.CubeBase + CubeOffset::GameController);
     offset.World = offset.GameController + CubeOffset::World;
     offset.EntityMap = offset.World + CubeOffset::EntityMap;
+	offset.LocalPlayer = offset.GameController + CubeOffset::LocalPlayer;
 }
 
-std::vector<CubeX::Creature*>* CubeX::GetCreatures(){
+std::vector<Creature*>* CubeX::GetCreatures(){
 	std::vector<Creature*>* creatures = new std::vector<Creature*>;
 	unsigned int map_ptr = *(unsigned int *)offset.EntityMap;
 	unsigned int node_ptr = *(unsigned int*)map_ptr;
@@ -43,8 +44,7 @@ std::vector<CubeX::Creature*>* CubeX::GetCreatures(){
 	while (node_ptr != map_ptr) {
 		unsigned int creature_ptr_ptr = node_ptr + 0x18;
 		unsigned int creature_ptr = *(unsigned int*)creature_ptr_ptr;
-
-		CubeX::Creature* creature = (CubeX::Creature*)creature_ptr;
+		Creature* creature = (Creature*)creature_ptr;
 		typedef void(__thiscall* mapnext_t)(unsigned int* node_ptr);
 		auto mapnext = (mapnext_t)(offset.CubeBase + 0x1C3EA0);
 		mapnext(&node_ptr);
@@ -53,10 +53,18 @@ std::vector<CubeX::Creature*>* CubeX::GetCreatures(){
 	}
 	return creatures;
 }
+
+Creature* CubeX::GetPlayer()
+{
+	unsigned int player_ptr = *(unsigned int *)offset.LocalPlayer;
+	return (Creature *)player_ptr;
+}
 void CubeX::RefreshVal()
 {
     val.Creatures = GetCreatures();
     val.num_creatures = val.Creatures->size();
+	val.LocalPlayer = GetPlayer();
+	CPlayerPtr = *(unsigned int *)offset.LocalPlayer;
 }
 
 void CubeX::PrintOffsets()
@@ -66,12 +74,3 @@ void CubeX::PrintOffsets()
     printf("World : %x\n", offset.World);
     printf("EntityMapPtr : %x\n", offset.EntityMap);
 }
-/*
-Vec2f CubeX::GetWindowSize()
-{
-	Vec2f winSize;
-	winSize.x = readMem<unsigned int>(cube_handle, CubeOffset::WindowWidth);
-	winSize.y = readMem<unsigned int>(cube_handle, CubeOffset::WindowHeight);
-	
-	return winSize;
-}*/
