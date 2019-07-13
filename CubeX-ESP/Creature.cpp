@@ -12,5 +12,7 @@ double Creature::DistanceFrom(Vector3<int64_t> point) {
 	return sqrt((x*x) + (y*y) + (z*z));
 }
 double Creature::DistanceFrom(Creature* target) {
+	if (target->GUID == this->GUID)
+		return 0;
 	return DistanceFrom(target->entity_data.position);
 }
